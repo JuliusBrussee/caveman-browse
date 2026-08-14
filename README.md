@@ -3,12 +3,12 @@
 **A token-efficient alternative to Playwright MCP for coding agents.** One Go
 binary that attaches to the Chrome you already run, reads the real
 accessibility tree, compresses it, and gives your agent four tools that cost
-**297 tokens of catalog** — versus ~13,700 for Playwright MCP and ~17,000 for
-Chrome DevTools MCP.
+**297 tokens of catalog** — versus 3,422 for Playwright MCP (0.0.79) and 4,507
+for Chrome DevTools MCP (1.7.0), measured live 2026-08-14.
 
 | | caveman-browse | Playwright MCP | Chrome DevTools MCP |
 |---|---|---|---|
-| Tool-definition cost | **297 tokens** | ~13.7k tokens | ~17k tokens |
+| Tool-definition cost (measured 2026-08-14) | **297 tokens** (4 tools) | 3,422 tokens (24 tools) | 4,507 tokens (29 tools) |
 | Page representation | compressed a11y tree | aria-YAML (lossy) | a11y snapshot |
 | Focused query on a 200-row page | **~98 tokens** | ~15.7k (full ARIA) | full snapshot |
 | Byte-exact recovery of the original tree | **yes (CCR)** | no | no |
@@ -18,6 +18,17 @@ Numbers are `inferred` token counts measured with an offline `o200k_base`
 counter on pinned fixtures — see [BENCHMARK.md](BENCHMARK.md) for methodology,
 reproduction commands, and the cases where Playwright's bare ARIA text is
 *smaller* (tiny pages; we print those too).
+
+**Full-task head-to-head** (same headless agent, same task, server swapped;
+provider-reported session tokens; 2026-08-14 pilot, n=1/cell, all arms
+passed): finding one row in a 200-row table cost **150k** total input tokens
+through caveman-browse vs 203k (Playwright MCP) / 223k (Chrome DevTools MCP);
+counting matching rows **168k vs 358k / 223k**. On the action-heavy checkout
+task caveman-browse *lost* (668k vs 362k / 312k) — its settle-proof loop
+re-snapshots after every action instead of trusting dispatch. Full tables,
+causes, and claim boundaries: [benchmarks/agentloop/RESULTS.md](benchmarks/agentloop/RESULTS.md),
+[benchmarks/toolcatalog/RESULTS.md](benchmarks/toolcatalog/RESULTS.md),
+[benchmarks/snapshot/RESULTS.md](benchmarks/snapshot/RESULTS.md).
 
 ## Install
 

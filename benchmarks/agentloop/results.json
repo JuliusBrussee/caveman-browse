@@ -1,0 +1,407 @@
+[
+  {
+    "task": "dashboard-lookup",
+    "arm": "browse",
+    "model": "sonnet",
+    "wallSeconds": 20,
+    "passed": true,
+    "subtype": "success",
+    "turns": 3,
+    "usage": {
+      "input_tokens": 6,
+      "cache_creation_input_tokens": 20471,
+      "cache_read_input_tokens": 129981,
+      "output_tokens": 297,
+      "output_tokens_details": {
+        "thinking_tokens": 40
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 20471,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "not_available",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 33,
+          "cache_read_input_tokens": 50324,
+          "cache_creation_input_tokens": 280,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 280
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard"
+    },
+    "costUSD": 0.1662933,
+    "answer": "ANSWER: Customer 173 | EUR 193.00",
+    "resultTail": "Found it, row visible direct.\n\nANSWER: Customer 173 | EUR 193.00"
+  },
+  {
+    "task": "dashboard-lookup",
+    "arm": "playwright",
+    "model": "sonnet",
+    "wallSeconds": 18.6,
+    "passed": true,
+    "subtype": "success",
+    "turns": 4,
+    "usage": {
+      "input_tokens": 8,
+      "cache_creation_input_tokens": 21194,
+      "cache_read_input_tokens": 181637,
+      "output_tokens": 343,
+      "output_tokens_details": {
+        "thinking_tokens": 38
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 21194,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "not_available",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 49,
+          "cache_read_input_tokens": 50940,
+          "cache_creation_input_tokens": 387,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 387
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard"
+    },
+    "costUSD": 0.18682410000000002,
+    "answer": "ANSWER: Customer 173 | EUR 193.00",
+    "resultTail": "Found it. ORD-0173 → Customer 173, EUR 193.00.\n\nANSWER: Customer 173 | EUR 193.00"
+  },
+  {
+    "task": "dashboard-lookup",
+    "arm": "cdm",
+    "model": "sonnet",
+    "wallSeconds": 17.9,
+    "passed": true,
+    "subtype": "success",
+    "turns": 4,
+    "usage": {
+      "input_tokens": 8,
+      "cache_creation_input_tokens": 46952,
+      "cache_read_input_tokens": 176536,
+      "output_tokens": 311,
+      "output_tokens_details": {
+        "thinking_tokens": 51
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 46952,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "not_available",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 45,
+          "cache_read_input_tokens": 51165,
+          "cache_creation_input_tokens": 20249,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 20249
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard"
+    },
+    "costUSD": 0.3393618,
+    "answer": "ANSWER: Customer 173 | EUR 193.00",
+    "resultTail": "ORD-0173 → Customer 173, EUR 193.00.\n\nANSWER: Customer 173 | EUR 193.00"
+  },
+  {
+    "task": "dashboard-count",
+    "arm": "browse",
+    "model": "sonnet",
+    "wallSeconds": 19,
+    "passed": true,
+    "subtype": "success",
+    "turns": 3,
+    "usage": {
+      "input_tokens": 6,
+      "cache_creation_input_tokens": 37610,
+      "cache_read_input_tokens": 130014,
+      "output_tokens": 517,
+      "output_tokens_details": {
+        "thinking_tokens": 246
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 37610,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "not_available",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 242,
+          "cache_read_input_tokens": 50345,
+          "cache_creation_input_tokens": 17410,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 17410
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard"
+    },
+    "costUSD": 0.2724372,
+    "answer": "ANSWER: 12",
+    "resultTail": "Count manual review rows: 0000,0017,0034,0051,0068,0085,0102,0119,0136,0153,0170,0187 — 12 total (200 orders, every 17th).\n\nANSWER: 12"
+  },
+  {
+    "task": "dashboard-count",
+    "arm": "playwright",
+    "model": "sonnet",
+    "wallSeconds": 37.1,
+    "passed": true,
+    "subtype": "success",
+    "turns": 7,
+    "usage": {
+      "input_tokens": 14,
+      "cache_creation_input_tokens": 22216,
+      "cache_read_input_tokens": 335551,
+      "output_tokens": 1063,
+      "output_tokens_details": {
+        "thinking_tokens": 239
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 22216,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "not_available",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 37,
+          "cache_read_input_tokens": 51990,
+          "cache_creation_input_tokens": 371,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 371
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard"
+    },
+    "costUSD": 0.2499483,
+    "answer": "ANSWER: 12",
+    "resultTail": "No pagination found. Table fully loaded, 12 rows with status \"manual review\".\n\nANSWER: 12"
+  },
+  {
+    "task": "dashboard-count",
+    "arm": "cdm",
+    "model": "sonnet",
+    "wallSeconds": 20.9,
+    "passed": true,
+    "subtype": "success",
+    "turns": 4,
+    "usage": {
+      "input_tokens": 8,
+      "cache_creation_input_tokens": 41253,
+      "cache_read_input_tokens": 182175,
+      "output_tokens": 426,
+      "output_tokens_details": {
+        "thinking_tokens": 164
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 41253,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "not_available",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 164,
+          "cache_read_input_tokens": 51149,
+          "cache_creation_input_tokens": 20249,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 20249
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard"
+    },
+    "costUSD": 0.30858450000000004,
+    "answer": "ANSWER: 12",
+    "resultTail": "Pattern: manual review every 17 orders (0,17,34,...,187), 200 orders total (0-199).\n\nANSWER: 12"
+  },
+  {
+    "task": "checkout-fill",
+    "arm": "browse",
+    "model": "sonnet",
+    "wallSeconds": 40.7,
+    "passed": true,
+    "subtype": "success",
+    "turns": 13,
+    "usage": {
+      "input_tokens": 26,
+      "cache_creation_input_tokens": 22685,
+      "cache_read_input_tokens": 645697,
+      "output_tokens": 1279,
+      "output_tokens_details": {
+        "thinking_tokens": 162
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 22685,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "not_available",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 33,
+          "cache_read_input_tokens": 52668,
+          "cache_creation_input_tokens": 162,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 162
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard"
+    },
+    "costUSD": 0.3490821,
+    "answer": "ANSWER: Saved agent@example.com pro",
+    "resultTail": "Status text confirmed via DOM read.\n\nANSWER: Saved agent@example.com pro"
+  },
+  {
+    "task": "checkout-fill",
+    "arm": "playwright",
+    "model": "sonnet",
+    "wallSeconds": 22.2,
+    "passed": true,
+    "subtype": "success",
+    "turns": 8,
+    "usage": {
+      "input_tokens": 14,
+      "cache_creation_input_tokens": 22594,
+      "cache_read_input_tokens": 339355,
+      "output_tokens": 664,
+      "output_tokens_details": {
+        "thinking_tokens": 41
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 22594,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "not_available",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 43,
+          "cache_read_input_tokens": 52464,
+          "cache_creation_input_tokens": 275,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 275
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard"
+    },
+    "costUSD": 0.2473725,
+    "answer": "ANSWER: Saved agent@example.com pro",
+    "resultTail": "Order saved, status line reads: \"Saved agent@example.com pro\"\n\nANSWER: Saved agent@example.com pro"
+  },
+  {
+    "task": "checkout-fill",
+    "arm": "cdm",
+    "model": "sonnet",
+    "wallSeconds": 21.4,
+    "passed": true,
+    "subtype": "success",
+    "turns": 6,
+    "usage": {
+      "input_tokens": 12,
+      "cache_creation_input_tokens": 22794,
+      "cache_read_input_tokens": 289061,
+      "output_tokens": 551,
+      "output_tokens_details": {
+        "thinking_tokens": 58
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 22794,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "not_available",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 39,
+          "cache_read_input_tokens": 52546,
+          "cache_creation_input_tokens": 393,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 393
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard"
+    },
+    "costUSD": 0.2317833,
+    "answer": "ANSWER: Saved agent@example.com pro",
+    "resultTail": "Order saved: email agent@example.com, plan Pro.\n\nANSWER: Saved agent@example.com pro"
+  }
+]

@@ -1,16 +1,17 @@
 # Caveman Browse efficiency benchmark
 
-Measured 2026-08-10 with Google Chrome 151.0.7922.108, locked
-`@playwright/test` 1.56.1, and Caveman's offline `o200k_base` counter. Every
-number is an `inferred` token count for one snapshot—not provider usage or
-billing.
+Measured 2026-08-14 with Google Chrome 151, `@playwright/test` 1.62.1, and
+Caveman's offline `o200k_base` counter. Every number is an `inferred` token
+count for one snapshot—not provider usage or billing.
 
-Caveman rows re-measured 2026-08-14 on Google Chrome (same fixtures, same
-counter, 3 runs) after two changes: the payload became text plus one accounting
-line instead of a JSON envelope, and `interactive` was added. The Playwright
-baselines are unchanged from 2026-08-10 and were **not** re-run, so the
-cross-tool columns compare a fresh Caveman number against an older Playwright
-number on the same fixture and toolchain.
+All arms were measured the same day on the same machine and fixtures: Caveman
+rows are medians of 3 integration runs; the Playwright ARIA baseline was
+re-run fresh on 1.62.1 (15,709 on the dashboard vs 15,704 on 1.56.1 —
+the earlier stale-baseline caveat is closed). A chrome-devtools-mcp
+`take_snapshot` arm and the full three-way tables live in
+[benchmarks/snapshot/RESULTS.md](benchmarks/snapshot/RESULTS.md); the
+tool-catalog head-to-head lives in
+[benchmarks/toolcatalog/RESULTS.md](benchmarks/toolcatalog/RESULTS.md).
 
 ## Results
 
@@ -22,17 +23,22 @@ the small Caveman ranges. Playwright was stable across all five of its runs.
 | Representation | Tokens | Versus raw AX | Versus Playwright |
 |---|---:|---:|---:|
 | Raw `Accessibility.getFullAXTree` JSON | 398,494 `[398,493–398,497]` | — | — |
-| Playwright `locator("body").ariaSnapshot()` | 15,704 | 96.06% less | — |
-| Caveman full agent-visible result | 11,941 `[11,940–11,944]` | 97.00% less | 23.96% less |
-| Caveman `interactive` result, no query | 5,090 `[5,089–5,093]` | 98.72% less | 67.59% less |
-| Caveman focused result, query `ORD-0173` | 98 `[97–101]` | 99.98% less | 99.38% less / 160.2× smaller |
+| Playwright `locator("body").ariaSnapshot()` | 15,709 | 96.06% less | — |
+| Caveman full agent-visible result | 11,942 `[11,941–11,944]` | 97.00% less | 23.98% less |
+| Caveman `interactive` result, no query | 5,091 `[5,090–5,093]` | 98.72% less | 67.59% less |
+| Caveman focused result, query `ORD-0173` | 125 `[123–127]` | 99.97% less | 99.20% less / 125.7× smaller |
 
 The JSON envelope removal is the delta between the 2026-08-10 and 2026-08-14
-Caveman rows: full 13,368 → 11,941 (**-10.7%**) and focused 121 → 98
+Caveman rows: full 13,368 → 11,942 (**-10.7%**)
 (**-19.0%**), with no change to what the agent can see or act on.
 
+The focused row includes the matched row's sibling cells (customer, amount,
+action button), not just the matching cell: a 2026-08-14 agent-loop run showed
+a cell-only focus answered an order lookup with "unavailable". Row context
+costs ~26 tokens on this fixture and is correctness, not overhead.
+
 `interactive` keeps uid-bearing nodes plus the ancestors that place them. On
-this corpus it more than halves the queryless result (11,941 → 5,090) but does
+this corpus it more than halves the queryless result (11,942 → 5,091) but does
 not approach the 200–400 tokens `agent-browser snapshot -i` reports for typical
 pages — because this fixture is 200 rows each carrying its own actionable
 control, so the actionable set *is* most of the page. A page with a normal
@@ -51,8 +57,8 @@ action refs, recovery handle, or accounting. That asymmetry favors Playwright.
 |---|---:|---:|---:|
 | Raw `Accessibility.getFullAXTree` JSON | 4,186 `[4,183–4,188]` | — | — |
 | Playwright `locator("body").ariaSnapshot()` | 67 | 98.40% less | — |
-| Caveman full agent-visible result | 132 | 96.85% less | 1.97× larger |
-| Caveman focused result, query `Email Plan Save order` | 90 | 97.85% less | 1.34× larger |
+| Caveman full agent-visible result | 134 | 96.80% less | 2.00× larger |
+| Caveman focused result, query `Email Plan Save order` | 92 | 97.80% less | 1.37× larger |
 
 This small-page loss is important: Caveman's recovery handle, exact counters,
 honesty basis, and action UIDs cost more than bare Playwright ARIA text when the

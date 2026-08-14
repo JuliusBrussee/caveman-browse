@@ -40,5 +40,8 @@
     "claude",
     "agent",
     "token-efficiency"
-  ]
+  ],
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
+  }
 }

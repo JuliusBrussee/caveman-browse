@@ -50,7 +50,10 @@ recover the byte-exact original AX payload through CCR. Every saving here is
   narrows the uid map: the target cache always comes from the full curate pass.
 - The four-tool catalog is at 297 of its 300-token budget. A fifth tool does not
   fit, and neither does a verbose description. That budget is the moat versus
-  ~13.7k (Playwright MCP) and ~17k (Chrome DevTools MCP) tool-definition tokens.
+  3,422 (@playwright/mcp 0.0.79) and 4,507 (chrome-devtools-mcp 1.7.0)
+  tool-definition tokens, measured 2026-08-14 (`benchmarks/toolcatalog/`);
+  earlier Playwright MCP builds measured ~13.7k — always re-measure, never
+  quote stale competitor numbers.
 - Direct CLI Chrome is detached so separate `snapshot`/`act`/`eval` processes
   can share a target. `close` must terminate it. Fresh `CAVEMAN_HOME` must work;
   state writes stay atomic and mode `0600`.

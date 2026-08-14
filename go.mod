@@ -3,7 +3,7 @@ module github.com/JuliusBrussee/caveman-browse
 go 1.26.5
 
 require (
-	github.com/JuliusBrussee/caveman v1.10.1-0.20260813152759-c72984e4392c
+	github.com/JuliusBrussee/caveman v1.10.1-0.20260814205424-cdb9558cf4a8
 	github.com/chromedp/cdproto v0.0.0-20260321001828-e3e3800016bc
 	github.com/chromedp/chromedp v0.15.1
 	github.com/go-json-experiment/json v0.0.0-20260214004413-d219187c3433

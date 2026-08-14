@@ -1,0 +1,20 @@
+[
+  {
+    "id": "dashboard-lookup",
+    "fixture": "order_dashboard.html",
+    "prompt": "Open {URL} with your browser tools. Find order ORD-0173 in the orders table and report its customer and amount. End your reply with a line of the form: ANSWER: <customer> | <amount>",
+    "expect": ["Customer 173", "193"]
+  },
+  {
+    "id": "dashboard-count",
+    "fixture": "order_dashboard.html",
+    "prompt": "Open {URL} with your browser tools. Count how many orders in the table have status 'manual review'. End your reply with a line of the form: ANSWER: <number>",
+    "expect": ["12"]
+  },
+  {
+    "id": "checkout-fill",
+    "fixture": "agent_checkout.html",
+    "prompt": "Open {URL} with your browser tools. Type agent@example.com into the Email field, select the Pro plan, click the 'Save order' button, then report the exact text of the status line. End your reply with a line of the form: ANSWER: <status text>",
+    "expect": ["Saved agent@example.com pro"]
+  }
+]
