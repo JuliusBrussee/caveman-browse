@@ -1,0 +1,12 @@
+{
+  "name": "caveman-browse",
+  "description": "Token-efficient browser driver: compressed accessibility snapshots, uid actions, byte-exact recovery over MCP.",
+  "version": "1.0.0",
+  "contextFileName": "GEMINI.md",
+  "mcpServers": {
+    "caveman-browse": {
+      "command": "npx",
+      "args": ["-y", "caveman-browse"]
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "caveman-browse",
+  "version": "1.0.0",
+  "description": "Token-efficient browser driver: compressed accessibility snapshots, uid actions, byte-exact recovery. Playwright MCP alternative.",
+  "author": {
+    "name": "Julius Brussee",
+    "url": "https://github.com/JuliusBrussee"
+  },
+  "homepage": "https://github.com/JuliusBrussee/caveman-browse",
+  "repository": "https://github.com/JuliusBrussee/caveman-browse",
+  "license": "BSL-1.1",
+  "keywords": ["browser", "automation", "mcp", "accessibility", "token-efficiency"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Caveman Browse",
+    "shortDescription": "Drive Chrome with 4 compressed MCP tools. Byte-exact recovery.",
+    "longDescription": "Local browser driver for coding agents. Reads real Chrome accessibility trees, compresses them (savings always inferred), acts by uid handle, and recovers the byte-exact original payload on demand. One Go binary; attaches to the Chrome you already run.",
+    "developerName": "Julius Brussee",
+    "category": "Productivity",
+    "capabilities": ["Browse"],
+    "websiteURL": "https://github.com/JuliusBrussee/caveman-browse",
+    "privacyPolicyURL": "https://github.com/JuliusBrussee/caveman-browse/blob/main/README.md",
+    "termsOfServiceURL": "https://github.com/JuliusBrussee/caveman-browse/blob/main/LICENSE",
+    "defaultPrompt": [
+      "Use the caveman-browse MCP tools to drive the browser: snapshot with a query, act by uid, prove settlement with a focused re-snapshot."
+    ],
+    "screenshots": [],
+    "brandColor": "#6B7280"
+  }
+}

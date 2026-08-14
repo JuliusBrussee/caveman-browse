@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "caveman-browse",
+  "description": "Token-efficient browser automation for coding agents — compressed accessibility snapshots with byte-exact recovery. A Playwright MCP alternative.",
+  "owner": {
+    "name": "Julius Brussee",
+    "url": "https://github.com/JuliusBrussee"
+  },
+  "plugins": [
+    {
+      "name": "caveman-browse",
+      "description": "Drive a real Chrome with four MCP tools costing 297 catalog tokens (Playwright MCP: ~13.7k). Compressed a11y snapshots, uid actions, CCR byte-exact recovery. Savings always inferred.",
+      "source": "./",
+      "category": "productivity"
+    }
+  ]
+}

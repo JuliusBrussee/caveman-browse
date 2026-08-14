@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "caveman-browse": {
+      "command": "npx",
+      "args": ["-y", "caveman-browse"]
+    }
+  }
+}

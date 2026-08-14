@@ -1,0 +1,44 @@
+{
+  "name": "caveman-browse",
+  "version": "1.0.0",
+  "description": "Caveman browser driver — compressed accessibility snapshots, uid actions, CCR recovery. Local-only, inferred-only.",
+  "license": "BSL-1.1",
+  "type": "module",
+  "bin": {
+    "caveman-browse": "bin/caveman-browse.mjs"
+  },
+  "files": [
+    "bin/caveman-browse.mjs",
+    "bin/binary-installer.generated.mjs",
+    "bin/release.generated.mjs",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "scripts": {
+    "pretest": "node scripts/gen-installer.mjs",
+    "prepack": "node scripts/gen-installer.mjs",
+    "test": "node --test bin/*.test.mjs tests/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JuliusBrussee/caveman-browse.git"
+  },
+  "homepage": "https://github.com/JuliusBrussee/caveman-browse#readme",
+  "bugs": {
+    "url": "https://github.com/JuliusBrussee/caveman-browse/issues"
+  },
+  "keywords": [
+    "mcp",
+    "browser",
+    "automation",
+    "playwright-alternative",
+    "accessibility",
+    "claude",
+    "agent",
+    "token-efficiency"
+  ]
+}

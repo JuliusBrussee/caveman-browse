@@ -1,0 +1,9 @@
+{
+  "name": "caveman-browse",
+  "description": "Token-efficient browser driver for coding agents. Four MCP tools (297 tokens total): compressed accessibility snapshots, uid actions, JS eval, byte-exact recovery. A Playwright MCP alternative that attaches to your own Chrome.",
+  "author": {
+    "name": "Julius Brussee",
+    "url": "https://github.com/JuliusBrussee"
+  },
+  "mcpServers": "./.mcp.json"
+}

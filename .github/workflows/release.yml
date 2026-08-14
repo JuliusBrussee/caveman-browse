@@ -1,0 +1,37 @@
+name: release
+# Builds multi-platform caveman-browse binaries on a bin-v* tag and attaches
+# them to a draft GitHub release. Publishing requires the release Ed25519
+# signing key: the npm shim verifies binary signatures against
+# BINARY_SIGNING_PUBKEY.pub, so unsigned artifacts stay draft-only.
+# Until repo-owned signed releases exist, the shim downloads from the caveman
+# monorepo releases (see scripts/gen-installer.mjs).
+on:
+  push:
+    tags: ["bin-v*"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Build binaries
+        run: |
+          mkdir -p dist
+          for target in darwin/arm64 darwin/amd64 linux/amd64 linux/arm64 windows/amd64; do
+            GOOS=${target%/*} GOARCH=${target#*/} \
+            CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" \
+              -o "dist/caveman-browse-${target%/*}-${target#*/}$([ "${target%/*}" = windows ] && echo .exe)" \
+              ./cmd/caveman-browse
+          done
+          (cd dist && shasum -a 256 * > SHA256SUMS)
+      - name: Draft release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: |
+            dist/*
