@@ -34,24 +34,34 @@ func main() {
 
 // serveStdio runs the embedded-Chrome MCP server. Unlike the detached
 // direct-CLI path, the browser here is a child of this process and is reaped
-// only by driver.Close(). Every exit therefore runs cleanup first: a bare
-// os.Exit skips deferred funcs, and a SIGTERM/SIGINT skips them too, either of
-// which would orphan the Chrome tree (chromedp sets no Pdeathsig).
+// only by us (chromedp sets no Pdeathsig). Shutdown is funnelled through a
+// single idempotent cleanup that runs on three paths:
+//
+//   - normal return (deferred), including Serve errors;
+//   - SIGINT/SIGTERM, via the handler goroutine;
+//   - a broken stdout when the host vanishes mid-write — SIGPIPE is ignored so
+//     the write fails as a Serve error instead of a fatal signal that would
+//     skip every defer and orphan Chrome.
+//
+// cleanup cancels ctx first. The browser's lifetime is bound to ctx, so cancel
+// reaps it even if a signal lands in the startup window after NewCDPDriver has
+// launched Chrome but before the driver pointer is published — the race an
+// unbound pointer cleanup would lose.
 func serveStdio(logger *slog.Logger) int {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	signal.Ignore(syscall.SIGPIPE)
+
 	var (
 		once   sync.Once
 		mu     sync.Mutex
 		driver *browse.CDPDriver
 		store  *ccr.Store
 	)
-	// mu guards driver/store: the signal goroutine reads them concurrently with
-	// the assignments below. Without it, a SIGTERM landing mid-startup is a data
-	// race on both pointers and can miss a driver assigned after the nil check,
-	// orphaning the Chrome tree this cleanup exists to reap.
-	setStore := func(s *ccr.Store) { mu.Lock(); store = s; mu.Unlock() }
-	setDriver := func(d *browse.CDPDriver) { mu.Lock(); driver = d; mu.Unlock() }
 	cleanup := func() {
 		once.Do(func() {
+			cancel() // race-free reap; kills Chrome even if not yet published
 			mu.Lock()
 			d, s := driver, store
 			mu.Unlock()
@@ -65,12 +75,13 @@ func serveStdio(logger *slog.Logger) int {
 	}
 	defer cleanup()
 
-	// A host that dies abruptly may deliver SIGTERM/SIGINT before (or instead
-	// of) closing stdin. Reap the browser explicitly, then exit.
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-sig
+		// Hard guard: if a wedged browser makes cleanup block, never become
+		// unkillable — a second signal is already disarmed by Notify.
+		time.AfterFunc(5*time.Second, func() { os.Exit(1) })
 		cleanup()
 		os.Exit(0)
 	}()
@@ -80,9 +91,11 @@ func serveStdio(logger *slog.Logger) int {
 		logger.Error("open recovery store", "err", err)
 		return 1
 	}
-	setStore(st)
+	mu.Lock()
+	store = st
+	mu.Unlock()
 
-	drv, err := browse.NewCDPDriver(context.Background(), browse.CDPOptions{
+	drv, err := browse.NewCDPDriver(ctx, browse.CDPOptions{
 		Endpoint:    os.Getenv("CAVEMAN_BROWSE_CDP"),
 		UserDataDir: os.Getenv("CAVEMAN_BROWSE_USER_DATA_DIR"),
 		BrowserPath: os.Getenv("CAVEMAN_BROWSE_CHROME"),
@@ -92,7 +105,9 @@ func serveStdio(logger *slog.Logger) int {
 		logger.Error("open browser driver", "err", err)
 		return 1
 	}
-	setDriver(drv)
+	mu.Lock()
+	driver = drv
+	mu.Unlock()
 
 	eng := engine.New(st, nil)
 	session := browse.NewSession(eng, drv, logger)
