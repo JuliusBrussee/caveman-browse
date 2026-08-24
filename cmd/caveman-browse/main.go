@@ -9,9 +9,12 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
+	"syscall"
 	"time"
 
 	"github.com/JuliusBrussee/caveman-browse"
@@ -26,15 +29,50 @@ func main() {
 		runDirect(logger, os.Args[1:])
 		return
 	}
+	os.Exit(serveStdio(logger))
+}
 
-	store, err := openRecoveryStore()
+// serveStdio runs the embedded-Chrome MCP server. Unlike the detached
+// direct-CLI path, the browser here is a child of this process and is reaped
+// only by driver.Close(). Every exit therefore runs cleanup first: a bare
+// os.Exit skips deferred funcs, and a SIGTERM/SIGINT skips them too, either of
+// which would orphan the Chrome tree (chromedp sets no Pdeathsig).
+func serveStdio(logger *slog.Logger) int {
+	var (
+		once   sync.Once
+		driver *browse.CDPDriver
+		store  *ccr.Store
+	)
+	cleanup := func() {
+		once.Do(func() {
+			if driver != nil {
+				_ = driver.Close()
+			}
+			if store != nil {
+				_ = store.Close()
+			}
+		})
+	}
+	defer cleanup()
+
+	// A host that dies abruptly may deliver SIGTERM/SIGINT before (or instead
+	// of) closing stdin. Reap the browser explicitly, then exit.
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-sig
+		cleanup()
+		os.Exit(0)
+	}()
+
+	var err error
+	store, err = openRecoveryStore()
 	if err != nil {
 		logger.Error("open recovery store", "err", err)
-		os.Exit(1)
+		return 1
 	}
-	defer store.Close()
 
-	driver, err := browse.NewCDPDriver(context.Background(), browse.CDPOptions{
+	driver, err = browse.NewCDPDriver(context.Background(), browse.CDPOptions{
 		Endpoint:    os.Getenv("CAVEMAN_BROWSE_CDP"),
 		UserDataDir: os.Getenv("CAVEMAN_BROWSE_USER_DATA_DIR"),
 		BrowserPath: os.Getenv("CAVEMAN_BROWSE_CHROME"),
@@ -42,19 +80,18 @@ func main() {
 	})
 	if err != nil {
 		logger.Error("open browser driver", "err", err)
-		os.Exit(1)
+		return 1
 	}
-	defer driver.Close()
 
 	eng := engine.New(store, nil)
 	session := browse.NewSession(eng, driver, logger)
-	defer session.Close()
 
 	srv := mcp.NewServer("caveman-browse", browse.BrowserTools(session), logger)
 	if err := srv.Serve(os.Stdin, os.Stdout); err != nil {
 		logger.Error("serve", "err", err)
-		os.Exit(1)
+		return 1
 	}
+	return 0
 }
 
 func openRecoveryStore() (*ccr.Store, error) {
