@@ -9,9 +9,12 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
+	"syscall"
 	"time"
 
 	"github.com/JuliusBrussee/caveman-browse"
@@ -26,35 +29,122 @@ func main() {
 		runDirect(logger, os.Args[1:])
 		return
 	}
+	os.Exit(serveStdio(logger))
+}
 
-	store, err := openRecoveryStore()
+// serveStdio runs the embedded-Chrome MCP server. Unlike the detached
+// direct-CLI path, the browser here is a child of this process and is reaped
+// only by us (chromedp sets no Pdeathsig). Shutdown is funnelled through a
+// single idempotent cleanup that runs on three paths:
+//
+//   - normal return (deferred), including Serve errors;
+//   - SIGINT/SIGTERM, via the handler goroutine;
+//   - a broken stdout when the host vanishes mid-write — SIGPIPE is ignored so
+//     the write fails as a Serve error instead of a fatal signal that would
+//     skip every defer and orphan Chrome.
+//
+// cleanup cancels ctx first. The browser's lifetime is bound to ctx, so cancel
+// reaps it even if a signal lands in the startup window after NewCDPDriver has
+// launched Chrome but before the driver pointer is published — the race an
+// unbound pointer cleanup would lose.
+func serveStdio(logger *slog.Logger) int {
+	// OS-level backstop for the uncatchable path (Windows TerminateProcess): bind
+	// this process to a kill-on-close Job Object so the inherited Chrome tree dies
+	// with us even when no signal or defer can run. No-op off Windows.
+	if err := superviseChildren(); err != nil {
+		logger.Warn("child-process supervision unavailable; relying on signal cleanup", "err", err)
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	signal.Ignore(syscall.SIGPIPE)
+
+	// Own the temp profile dir here, not inside the driver. If a signal splits
+	// NewCDPDriver's return from the driver publish below, driver-owned removal
+	// would be skipped; binding removal to this cleanup closes that window. A
+	// remote endpoint or a caller-supplied dir means we own neither.
+	endpoint := os.Getenv("CAVEMAN_BROWSE_CDP")
+	userDataDir := os.Getenv("CAVEMAN_BROWSE_USER_DATA_DIR")
+	ownProfile := endpoint == "" && userDataDir == ""
+	if ownProfile {
+		dir, err := os.MkdirTemp("", "caveman-browse-*")
+		if err != nil {
+			logger.Error("create browse profile", "err", err)
+			return 1
+		}
+		userDataDir = dir
+	}
+
+	var (
+		once   sync.Once
+		mu     sync.Mutex
+		driver *browse.CDPDriver
+		store  *ccr.Store
+	)
+	cleanup := func() {
+		once.Do(func() {
+			cancel() // race-free reap; kills Chrome even if not yet published
+			mu.Lock()
+			d, s := driver, store
+			mu.Unlock()
+			if d != nil {
+				_ = d.Close()
+			}
+			if s != nil {
+				_ = s.Close()
+			}
+			// Remove after Close so Chrome has exited and released its file locks.
+			if ownProfile {
+				_ = os.RemoveAll(userDataDir)
+			}
+		})
+	}
+	defer cleanup()
+
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-sig
+		// Hard guard: if a wedged browser makes cleanup block, never become
+		// unkillable — a second signal is already disarmed by Notify.
+		time.AfterFunc(5*time.Second, func() { os.Exit(1) })
+		cleanup()
+		os.Exit(0)
+	}()
+
+	st, err := openRecoveryStore()
 	if err != nil {
 		logger.Error("open recovery store", "err", err)
-		os.Exit(1)
+		return 1
 	}
-	defer store.Close()
+	mu.Lock()
+	store = st
+	mu.Unlock()
 
-	driver, err := browse.NewCDPDriver(context.Background(), browse.CDPOptions{
-		Endpoint:    os.Getenv("CAVEMAN_BROWSE_CDP"),
-		UserDataDir: os.Getenv("CAVEMAN_BROWSE_USER_DATA_DIR"),
+	drv, err := browse.NewCDPDriver(ctx, browse.CDPOptions{
+		Endpoint:    endpoint,
+		UserDataDir: userDataDir,
 		BrowserPath: os.Getenv("CAVEMAN_BROWSE_CHROME"),
 		Headless:    os.Getenv("CAVEMAN_BROWSE_HEADFUL") != "1",
 	})
 	if err != nil {
 		logger.Error("open browser driver", "err", err)
-		os.Exit(1)
+		return 1
 	}
-	defer driver.Close()
+	mu.Lock()
+	driver = drv
+	mu.Unlock()
 
-	eng := engine.New(store, nil)
-	session := browse.NewSession(eng, driver, logger)
-	defer session.Close()
+	eng := engine.New(st, nil)
+	session := browse.NewSession(eng, drv, logger)
 
 	srv := mcp.NewServer("caveman-browse", browse.BrowserTools(session), logger)
 	if err := srv.Serve(os.Stdin, os.Stdout); err != nil {
 		logger.Error("serve", "err", err)
-		os.Exit(1)
+		return 1
 	}
+	return 0
 }
 
 func openRecoveryStore() (*ccr.Store, error) {
