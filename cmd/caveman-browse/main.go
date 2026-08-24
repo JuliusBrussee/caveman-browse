@@ -40,16 +40,26 @@ func main() {
 func serveStdio(logger *slog.Logger) int {
 	var (
 		once   sync.Once
+		mu     sync.Mutex
 		driver *browse.CDPDriver
 		store  *ccr.Store
 	)
+	// mu guards driver/store: the signal goroutine reads them concurrently with
+	// the assignments below. Without it, a SIGTERM landing mid-startup is a data
+	// race on both pointers and can miss a driver assigned after the nil check,
+	// orphaning the Chrome tree this cleanup exists to reap.
+	setStore := func(s *ccr.Store) { mu.Lock(); store = s; mu.Unlock() }
+	setDriver := func(d *browse.CDPDriver) { mu.Lock(); driver = d; mu.Unlock() }
 	cleanup := func() {
 		once.Do(func() {
-			if driver != nil {
-				_ = driver.Close()
+			mu.Lock()
+			d, s := driver, store
+			mu.Unlock()
+			if d != nil {
+				_ = d.Close()
 			}
-			if store != nil {
-				_ = store.Close()
+			if s != nil {
+				_ = s.Close()
 			}
 		})
 	}
@@ -65,14 +75,14 @@ func serveStdio(logger *slog.Logger) int {
 		os.Exit(0)
 	}()
 
-	var err error
-	store, err = openRecoveryStore()
+	st, err := openRecoveryStore()
 	if err != nil {
 		logger.Error("open recovery store", "err", err)
 		return 1
 	}
+	setStore(st)
 
-	driver, err = browse.NewCDPDriver(context.Background(), browse.CDPOptions{
+	drv, err := browse.NewCDPDriver(context.Background(), browse.CDPOptions{
 		Endpoint:    os.Getenv("CAVEMAN_BROWSE_CDP"),
 		UserDataDir: os.Getenv("CAVEMAN_BROWSE_USER_DATA_DIR"),
 		BrowserPath: os.Getenv("CAVEMAN_BROWSE_CHROME"),
@@ -82,9 +92,10 @@ func serveStdio(logger *slog.Logger) int {
 		logger.Error("open browser driver", "err", err)
 		return 1
 	}
+	setDriver(drv)
 
-	eng := engine.New(store, nil)
-	session := browse.NewSession(eng, driver, logger)
+	eng := engine.New(st, nil)
+	session := browse.NewSession(eng, drv, logger)
 
 	srv := mcp.NewServer("caveman-browse", browse.BrowserTools(session), logger)
 	if err := srv.Serve(os.Stdin, os.Stdout); err != nil {
