@@ -8,7 +8,7 @@
   },
   "homepage": "https://github.com/JuliusBrussee/caveman-browse",
   "repository": "https://github.com/JuliusBrussee/caveman-browse",
-  "license": "BSL-1.1",
+  "license": "Apache-2.0",
   "keywords": ["browser", "automation", "mcp", "accessibility", "token-efficiency"],
   "skills": "./skills/",
   "interface": {
