@@ -1,14 +1,17 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"log/slog"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/JuliusBrussee/caveman-browse"
+	"github.com/JuliusBrussee/caveman/mcp"
 )
 
 func TestOpenRecoveryStoreCreatesFreshCavemanHome(t *testing.T) {
@@ -82,5 +85,50 @@ func TestSaveDirectStateKeepsZeroTargetSessionCloseable(t *testing.T) {
 	}
 	if got.TargetID != "target-empty" || got.Targets == nil || len(got.Targets) != 0 || !got.Owned {
 		t.Fatalf("zero-target session state was dropped: %+v", got)
+	}
+}
+
+// TestRunUntilSignalReturnsOnContextDoneWithoutWaitingForServe pins the signal-handler gap:
+// in is an unclosed pipe, mimicking stdin with no EOF, so only the ctx.Done() branch returns.
+func TestRunUntilSignalReturnsOnContextDoneWithoutWaitingForServe(t *testing.T) {
+	srv := mcp.NewServer("test", nil, nil)
+	in, _ := io.Pipe() // never written to, never closed
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel() // simulates a signal having already arrived
+
+	done := make(chan error, 1)
+	go func() { done <- runUntilSignal(ctx, srv, in, io.Discard) }()
+
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Fatalf("runUntilSignal returned an error on ctx.Done(): %v", err)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("runUntilSignal did not return after ctx was done; it is still blocked on Serve reading a stalled input, so a terminating signal would never let main's deferred Close calls run")
+	}
+}
+
+// TestRunUntilSignalReturnsServeError confirms the ordinary EOF path is unchanged:
+// runUntilSignal still reports Serve's own result when in reaches EOF first.
+func TestRunUntilSignalReturnsServeError(t *testing.T) {
+	srv := mcp.NewServer("test", nil, nil)
+	in, w := io.Pipe()
+	_ = w.Close() // immediate EOF
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	done := make(chan error, 1)
+	go func() { done <- runUntilSignal(ctx, srv, in, io.Discard) }()
+
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Fatalf("runUntilSignal returned an unexpected error on EOF: %v", err)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("runUntilSignal did not return on Serve's own EOF completion")
 	}
 }
