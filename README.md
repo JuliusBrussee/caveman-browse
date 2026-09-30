@@ -115,8 +115,6 @@ CAVEMAN_BROWSE_CHROME="/path/to/Chrome" go test -tags=integration ./...
 
 ## License
 
-Source and binaries ship under [Business Source License 1.1](LICENSE)
-(source-available; first-party self-hosted production permitted; third-party
-hosted/managed/embedded use requires a commercial license). Third-party
+Source and binaries ship under the [Apache License 2.0](LICENSE). Third-party
 notices: [NOTICE](NOTICE). Part of the [Caveman](https://github.com/JuliusBrussee/caveman)
 efficiency stack; the a11y compressor and CCR live in the Caveman engine.
