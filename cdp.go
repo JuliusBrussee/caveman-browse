@@ -14,6 +14,7 @@ import (
 	cdpbrowser "github.com/chromedp/cdproto/browser"
 	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/dom"
+	"github.com/chromedp/cdproto/emulation"
 	"github.com/chromedp/cdproto/input"
 	"github.com/chromedp/cdproto/runtime"
 	cdptarget "github.com/chromedp/cdproto/target"
@@ -179,6 +180,13 @@ func dedupAXNodes(nodes []*accessibility.Node) []*accessibility.Node {
 func (d *CDPDriver) Act(ctx context.Context, req ActionRequest, target Target) (ActionResult, error) {
 	runCtx, cancel := d.requestContext(ctx)
 	defer cancel()
+	// A headful Chrome whose window lacks OS focus (attached via
+	// CAVEMAN_BROWSE_CDP or CAVEMAN_BROWSE_HEADFUL=1) ignores focus changes from
+	// synthetic clicks, so `type` inserted text nowhere. Emulating focus, as
+	// Puppeteer does, makes the page act as if its window were active.
+	_ = chromedp.Run(runCtx, chromedp.ActionFunc(func(actionCtx context.Context) error {
+		return emulation.SetFocusEmulationEnabled(true).Do(actionCtx)
+	}))
 	switch req.Action {
 	case "click":
 		if err := d.scrollIntoView(runCtx, target); err != nil {
