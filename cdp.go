@@ -14,6 +14,7 @@ import (
 	cdpbrowser "github.com/chromedp/cdproto/browser"
 	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/dom"
+	"github.com/chromedp/cdproto/emulation"
 	"github.com/chromedp/cdproto/input"
 	"github.com/chromedp/cdproto/runtime"
 	cdptarget "github.com/chromedp/cdproto/target"
@@ -154,12 +155,38 @@ func (d *CDPDriver) Snapshot(ctx context.Context, url string, wait time.Duration
 	if err := chromedp.Run(runCtx, actions...); err != nil {
 		return nil, err
 	}
-	return json.Marshal(nodes)
+	return json.Marshal(dedupAXNodes(nodes))
+}
+
+// dedupAXNodes drops repeated nodes with the same NodeID. Chrome 154 reports
+// the InlineTextBox of a CSS ::before/::after pseudo-element twice under one
+// negative NodeID; the a11y compressor rejects any tree with duplicate ids, so
+// a single icon-font glyph made every snapshot of the page fail closed as
+// cave_browser_snapshot_uncompressed. The copies are byte-identical, so
+// keeping the first one loses nothing.
+func dedupAXNodes(nodes []*accessibility.Node) []*accessibility.Node {
+	seen := make(map[accessibility.NodeID]bool, len(nodes))
+	out := nodes[:0]
+	for _, n := range nodes {
+		if n == nil || seen[n.NodeID] {
+			continue
+		}
+		seen[n.NodeID] = true
+		out = append(out, n)
+	}
+	return out
 }
 
 func (d *CDPDriver) Act(ctx context.Context, req ActionRequest, target Target) (ActionResult, error) {
 	runCtx, cancel := d.requestContext(ctx)
 	defer cancel()
+	// A headful Chrome whose window lacks OS focus (attached via
+	// CAVEMAN_BROWSE_CDP or CAVEMAN_BROWSE_HEADFUL=1) ignores focus changes from
+	// synthetic clicks, so `type` inserted text nowhere. Emulating focus, as
+	// Puppeteer does, makes the page act as if its window were active.
+	_ = chromedp.Run(runCtx, chromedp.ActionFunc(func(actionCtx context.Context) error {
+		return emulation.SetFocusEmulationEnabled(true).Do(actionCtx)
+	}))
 	switch req.Action {
 	case "click":
 		if err := d.scrollIntoView(runCtx, target); err != nil {
