@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/chromedp/cdproto/accessibility"
 	"github.com/chromedp/cdproto/runtime"
 	"github.com/go-json-experiment/json/jsontext"
 )
@@ -42,5 +43,28 @@ func TestRequestContextCancelsWithParent(t *testing.T) {
 	case <-runCtx.Done():
 	case <-time.After(time.Second):
 		t.Fatal("request-scoped CDP context did not cancel with parent")
+	}
+}
+
+// TestDedupAXNodesDropsRepeatedIDs covers Chrome 154 reporting a pseudo-element
+// InlineTextBox twice under one NodeID: the compressor rejects duplicate ids and
+// the whole page snapshot failed closed. Order and first copies must survive.
+func TestDedupAXNodesDropsRepeatedIDs(t *testing.T) {
+	nodes := []*accessibility.Node{
+		{NodeID: "1"},
+		{NodeID: "-1000000003"},
+		nil,
+		{NodeID: "-1000000003"},
+		{NodeID: "2"},
+	}
+	got := dedupAXNodes(nodes)
+	want := []accessibility.NodeID{"1", "-1000000003", "2"}
+	if len(got) != len(want) {
+		t.Fatalf("len = %d, want %d", len(got), len(want))
+	}
+	for i, n := range got {
+		if n.NodeID != want[i] {
+			t.Fatalf("node %d = %q, want %q", i, n.NodeID, want[i])
+		}
 	}
 }

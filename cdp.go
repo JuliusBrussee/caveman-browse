@@ -154,7 +154,26 @@ func (d *CDPDriver) Snapshot(ctx context.Context, url string, wait time.Duration
 	if err := chromedp.Run(runCtx, actions...); err != nil {
 		return nil, err
 	}
-	return json.Marshal(nodes)
+	return json.Marshal(dedupAXNodes(nodes))
+}
+
+// dedupAXNodes drops repeated nodes with the same NodeID. Chrome 154 reports
+// the InlineTextBox of a CSS ::before/::after pseudo-element twice under one
+// negative NodeID; the a11y compressor rejects any tree with duplicate ids, so
+// a single icon-font glyph made every snapshot of the page fail closed as
+// cave_browser_snapshot_uncompressed. The copies are byte-identical, so
+// keeping the first one loses nothing.
+func dedupAXNodes(nodes []*accessibility.Node) []*accessibility.Node {
+	seen := make(map[accessibility.NodeID]bool, len(nodes))
+	out := nodes[:0]
+	for _, n := range nodes {
+		if n == nil || seen[n.NodeID] {
+			continue
+		}
+		seen[n.NodeID] = true
+		out = append(out, n)
+	}
+	return out
 }
 
 func (d *CDPDriver) Act(ctx context.Context, req ActionRequest, target Target) (ActionResult, error) {
