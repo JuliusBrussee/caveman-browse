@@ -32,10 +32,10 @@ Arms:
 
 | Representation | Tokens |
 |---|---:|
-| Raw `Accessibility.getFullAXTree` JSON | 4,185 |
+| Raw `Accessibility.getFullAXTree` JSON | 4,186 |
 | **Playwright `ariaSnapshot()` (text only)** | **67** |
 | caveman-browse focused, query | 92 |
-| caveman-browse full result | 131 |
+| caveman-browse full result | 134 |
 | chrome-devtools-mcp `take_snapshot` (full result) | 180 |
 
 Playwright wins the tiny page: bare ARIA text carries no uids, recovery handle,

@@ -29,8 +29,8 @@ the small Caveman ranges. Playwright was stable across all five of its runs.
 | Caveman focused result, query `ORD-0173` | 125 `[123–127]` | 99.97% less | 99.20% less / 125.7× smaller |
 
 The JSON envelope removal is the delta between the 2026-08-10 and 2026-08-14
-Caveman rows: full 13,368 → 11,942 (**-10.7%**)
-(**-19.0%**), with no change to what the agent can see or act on.
+Caveman rows: full 13,368 → 11,942 (**-10.7%**), with no change to what the
+agent can see or act on.
 
 The focused row includes the matched row's sibling cells (customer, amount,
 action button), not just the matching cell: a 2026-08-14 agent-loop run showed
@@ -62,7 +62,7 @@ action refs, recovery handle, or accounting. That asymmetry favors Playwright.
 
 This small-page loss is important: Caveman's recovery handle, exact counters,
 honesty basis, and action UIDs cost more than bare Playwright ARIA text when the
-page itself is tiny. It still saves 97.85% versus raw AX and carries enough
+page itself is tiny. It still saves 96.80% versus raw AX and carries enough
 state to type, select, click, verify, and recover bytes. No universal
 snapshot-only win is claimed.
 

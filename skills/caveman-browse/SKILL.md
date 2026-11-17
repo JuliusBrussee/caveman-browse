@@ -29,7 +29,7 @@ need.
 
 - **Large or unknown pages: pass `query`.** `browser_snapshot(url, query)`
   keeps at most 12 best-matching nodes plus ancestors. On a 200-row dashboard
-  that is ~98 tokens instead of ~12k. Phrase the query with the words you
+  that is ~125 tokens instead of ~12k. Phrase the query with the words you
   expect on the target control ("Save order ORD-0173", "Email Plan").
 - **`interactive: true`** keeps only uid-bearing lines plus placing ancestors —
   cheaper than a full snapshot, but it hides page text you may need to read.

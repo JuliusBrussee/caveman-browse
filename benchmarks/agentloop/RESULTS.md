@@ -28,7 +28,7 @@ provider processed across all turns).
 
 ## Reading
 
-- **Read-heavy tasks: browse wins.** Fewest turns and 26–53% fewer total input
+- **Read-heavy tasks: browse wins.** Fewest turns and 25–53% fewer total input
   tokens on both dashboard tasks — the focused/compressed snapshot does the
   work of several bigger reads.
 - **Action-heavy task: browse loses this pilot.** 13 turns vs 6–8. Two causes,

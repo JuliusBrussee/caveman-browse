@@ -4,13 +4,14 @@
 binary that attaches to the Chrome you already run, reads the real
 accessibility tree, compresses it, and gives your agent four tools that cost
 **297 tokens of catalog** — versus 3,422 for Playwright MCP (0.0.79) and 4,507
-for Chrome DevTools MCP (1.7.0), measured live 2026-08-14.
+for Chrome DevTools MCP (1.7.0), measured live 2026-08-14 (versions as of
+2026-08-14).
 
 | | caveman-browse | Playwright MCP | Chrome DevTools MCP |
 |---|---|---|---|
 | Tool-definition cost (measured 2026-08-14) | **297 tokens** (4 tools) | 3,422 tokens (24 tools) | 4,507 tokens (29 tools) |
 | Page representation | compressed a11y tree | aria-YAML (lossy) | a11y snapshot |
-| Focused query on a 200-row page | **~98 tokens** | ~15.7k (full ARIA) | full snapshot |
+| Focused query on a 200-row page | **~125 tokens** | ~15.7k (full ARIA) | full snapshot |
 | Byte-exact recovery of the original tree | **yes (CCR)** | no | no |
 | Runtime | 1 static Go binary + your Chrome | Node + Chromium | Node + Puppeteer + Chromium |
 
@@ -19,7 +20,7 @@ counter on pinned fixtures — see [BENCHMARK.md](BENCHMARK.md) for methodology,
 reproduction commands, and the cases where Playwright's bare ARIA text is
 *smaller* (tiny pages; we print those too).
 
-**Full-task head-to-head** (same headless agent, same task, server swapped;
+Single-run pilot, not a claim: **full-task head-to-head** (same headless agent, same task, server swapped;
 provider-reported session tokens; 2026-08-14 pilot, n=1/cell, all arms
 passed): finding one row in a 200-row table cost **150k** total input tokens
 through caveman-browse vs 203k (Playwright MCP) / 223k (Chrome DevTools MCP);
@@ -32,34 +33,30 @@ causes, and claim boundaries: [benchmarks/agentloop/RESULTS.md](benchmarks/agent
 
 ## Install
 
-**Claude Code (plugin — server + usage skill):**
-
-```
-/plugin marketplace add JuliusBrussee/caveman-browse
-/plugin install caveman-browse@caveman-browse
-```
-
-**Claude Code (MCP only):**
+No npm package and no prebuilt binary release are published yet. The Claude
+Code plugin and the Gemini extension start the server through the npm package,
+so they will not work until it is published. Build the binary with Go instead:
 
 ```bash
-claude mcp add caveman-browse -- npx -y caveman-browse
+go install github.com/JuliusBrussee/caveman-browse/cmd/caveman-browse@latest
+```
+
+Run with no arguments, the binary is an MCP server over stdio.
+
+**Claude Code:**
+
+```bash
+claude mcp add caveman-browse -- "$(go env GOPATH)/bin/caveman-browse"
 ```
 
 **Cursor / any MCP host** (`.mcp.json` / `mcp.json`):
 
 ```json
-{ "mcpServers": { "caveman-browse": { "command": "npx", "args": ["-y", "caveman-browse"] } } }
+{ "mcpServers": { "caveman-browse": { "command": "/path/to/caveman-browse" } } }
 ```
 
-**Gemini CLI:**
-
-```bash
-gemini extensions install https://github.com/JuliusBrussee/caveman-browse
-```
-
-The npm shim downloads a signature-verified prebuilt binary on first run. No
-Node runtime is involved after launch; no Chromium is bundled — it drives your
-installed Chrome with a dedicated automation profile.
+No Chromium is bundled. It drives your installed Chrome with a dedicated
+automation profile.
 
 ## The four tools
 
@@ -81,12 +78,12 @@ installed Chrome with a dedicated automation profile.
 ## Direct CLI
 
 ```bash
-npx caveman-browse snapshot http://127.0.0.1:3000
-npx caveman-browse snapshot http://127.0.0.1:3000 "save settings"   # focused
-npx caveman-browse snapshot -i http://127.0.0.1:3000                # actionable only
-npx caveman-browse act <uid> click
-npx caveman-browse recover <handle>
-npx caveman-browse close
+caveman-browse snapshot http://127.0.0.1:3000
+caveman-browse snapshot http://127.0.0.1:3000 "save settings"   # focused
+caveman-browse snapshot -i http://127.0.0.1:3000                # actionable only
+caveman-browse act <uid> click
+caveman-browse recover <handle>
+caveman-browse close
 ```
 
 Direct commands share one detached, isolated Chrome until `close`. Navigation
