@@ -170,8 +170,8 @@ func (s *Session) snapshotTool(args json.RawMessage) mcp.ToolResult {
 		// Pass-through: the engine did not produce a recovery-backed uid view
 		// (a tree that did not get smaller, or no CCR store). The uid map is this
 		// tool's contract, not a side effect of a compression ratio, so we must
-		// NOT (a) dump the raw AX tree into `uids` — hundreds of KB of raw JSON is
-		// strictly worse than not using Browse — nor (b) wipe the prior page's uid
+		// NOT (a) dump the raw AX tree into `uids` — hundreds of KB of raw JSON
+		// bloats context past raw output — nor (b) wipe the prior page's uid
 		// cache. Fail closed and keep prior targets so acting stays predictable
 		// (issue #140).
 		s.log.Warn("a11y snapshot did not compress; refusing raw-tree pass-through",
